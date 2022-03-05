@@ -2,7 +2,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 def SVM(X_train, X_test, y_train, y_test, kernel='rbf'):
-    print("Support Vector Machine Classifier")
+    print("Support Vector Machine Classifier, may take several hours")
     ## SVM
     if kernel=='poly':
         # support vector machine wiht poly kernel
