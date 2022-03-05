@@ -30,7 +30,7 @@ def eval_net(model,data_loader,device,break_idx = None):
     acc= (ys == ypreds).float().sum() / len(ys)
     return acc.item()
 
-def train_net(model,train_dataloader,test_dataloader,optimizer_cls = optim.Adam, criterion = nn.CrossEntropyLoss(),n_iter=10,device='cpu',lr = 0.001):
+def train_net(model,train_dataloader,test_dataloader,optimizer_cls = optim.Adam, criterion = nn.CrossEntropyLoss(),n_iter=10,device='cpu',lr = 0.001,eval_interval=1000):
         
 
 
@@ -45,6 +45,8 @@ def train_net(model,train_dataloader,test_dataloader,optimizer_cls = optim.Adam,
                 model.train()
                 n = 0
                 n_acc = 0
+                ys = []
+                ypreds = []
                 for i, (xx, yy) in tqdm(enumerate(train_dataloader)):
                 
                 
@@ -66,15 +68,29 @@ def train_net(model,train_dataloader,test_dataloader,optimizer_cls = optim.Adam,
 
                         # Updating parameters
                         optimizer.step()
-                        if i % 1000 == 999:
+                        _, y_pred = outputs.max(1)
+                        ys.append(yy)
+                        ypreds.append(y_pred)
+                        
+                        if i % eval_interval == eval_interval-1:
                                 copy_loader = copy.deepcopy(test_dataloader)
                                 val = eval_net(model,copy_loader,device,break_idx = 1000)
+                                ys = torch.cat(ys)
+                                ypreds = torch.cat(ypreds)
+
+                                train= (ys == ypreds).float().sum() / len(ys)
+                                ys = []
+                                ypreds = []
+
                                 model.train()
-                                print(f'iter = {i} val_acc = {val}')
+                                print("\n")
+                                print("----------------------------------------------------")
+                                print(f'iter = {i} train_acc = {train} val_acc = {val}')
+                                print("----------------------------------------------------")
                         
                         i += 1
                         n += len(xx)
-                        _, y_pred = outputs.max(1)
+                        
                         n_acc += (yy == y_pred).float().sum().item()
                 train_losses.append(running_loss/i)
                 train_acc.append(n_acc/n)

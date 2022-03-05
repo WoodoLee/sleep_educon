@@ -82,7 +82,7 @@ def labeling(dfIn):
 
 
 class SleepDataset(Dataset):
-    def __init__(self,input_datas,label_datas,seq_len=50,sampling_rate=5):
+    def __init__(self,input_datas,label_datas,seq_len=50,sampling_rate=5,channel_first=False):
         # 정수형 라벨을 원핫라벨로.
 
         """
@@ -97,6 +97,7 @@ class SleepDataset(Dataset):
         self.seq_len = seq_len
         self.sampling_rate = int(sampling_rate * 25)
         self.seq_interval = seq_len * self.sampling_rate
+        self.channel_first = channel_first
         #label_data = pd.get_dummies(label_data)
         section_mark = 0
         input_len = 0
@@ -135,4 +136,6 @@ class SleepDataset(Dataset):
 
         x = torch.FloatTensor(self.x_data[fancy_index,:])
         y = torch.LongTensor(self.y_data[fancy_index])
+        if self.channel_first == True:
+            x = torch.transpose(x,0,1)
         return (x,y)
